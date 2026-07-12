@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>میکروهدف</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FBF1EF; --surface:#FFFFFF; --surface-tint:#FFF8F6; --text:#3A2C2E; --text-soft:#7A6265;
+    --border:#EAD9D5; --rose:#D98C93; --rose-deep:#C36F77; --rose-pale:#F6DEE0;
+    --sage:#8FA88C; --sage-deep:#6E8A6A; --sage-pale:#E4EBE0; --danger:#C97D7D; --shadow:0 8px 30px rgba(90,50,55,0.08); --radius:18px;
+  }
+  [data-theme="dark"]{
+    --bg:#241B1D; --surface:#2F2427; --surface-tint:#362A2D; --text:#F3E6E3; --text-soft:#C9B3B0;
+    --border:#4A3A3D; --rose:#E3A3A9; --rose-deep:#EAB7BC; --rose-pale:#4A343A;
+    --sage:#9FBB9B; --sage-deep:#B9D4B5; --sage-pale:#33402F; --shadow:0 8px 30px rgba(0,0,0,0.35);
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--bg); color:var(--text); font-family:'Vazirmatn', sans-serif; transition:background .3s ease, color .3s ease; }
+  .naskh{ font-family:'Noto Naskh Arabic','Vazirmatn', serif; }
+
+  .topbar{ position:sticky; top:0; z-index:30; display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:var(--surface); border-bottom:1px solid var(--border); gap:10px; flex-wrap:wrap; }
+  .topbar-right{ display:flex; align-items:center; gap:10px; }
+  .brand{ display:flex; align-items:center; gap:10px; font-weight:800; font-size:1.1rem; }
+  .hamburger{ width:42px;height:42px;border-radius:50%; border:1px solid var(--border); background:var(--surface-tint); display:flex;align-items:center;justify-content:center; cursor:pointer; }
+  .hamburger span{ display:block; width:18px; height:2px; background:var(--text); position:relative; }
+  .hamburger span::before,.hamburger span::after{ content:''; position:absolute; width:18px; height:2px; background:var(--text); left:0; }
+  .hamburger span::before{ top:-6px; } .hamburger span::after{ top:6px; }
+  .topbar-actions{ display:flex; gap:8px; }
+  .pill-btn{ display:flex; align-items:center; gap:6px; border:1px solid var(--border); background:var(--surface-tint); border-radius:20px; padding:8px 14px; cursor:pointer; font-family:inherit; font-size:.82rem; font-weight:600; color:var(--text); }
+  .pill-btn:hover{ background:var(--rose-pale); }
+
+  .overlay{ position:fixed; inset:0; background:rgba(50,30,30,.25); opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:35;}
+  .overlay.show{ opacity:1; pointer-events:auto; }
+  .sidebar{ position:fixed; top:0; right:-300px; width:280px; height:100%; background:var(--surface); border-left:1px solid var(--border); z-index:40; transition:right .28s ease; padding:22px 18px; display:flex; flex-direction:column; gap:6px; overflow-y:auto; }
+  .sidebar.open{ right:0; }
+  .side-item{ display:flex; align-items:center; gap:10px; padding:12px 10px; border-radius:12px; cursor:pointer; color:var(--text); font-weight:600; font-size:.95rem; }
+  .side-item:hover{ background:var(--rose-pale); }
+  .side-sub{ padding-right:26px; display:none; flex-direction:column; }
+  .side-sub.open{ display:flex; }
+  .side-sub .side-item{ font-weight:400; font-size:.88rem; }
+  .side-divider{ height:1px; background:var(--border); margin:10px 0; }
+  .side-user{ font-size:.8rem; color:var(--text-soft); padding:0 10px 6px; }
+
+  main{ max-width:960px; margin:0 auto; padding:26px 18px 80px; }
+  .view{ display:none; } .view.active{ display:block; }
+
+  .card{ background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); padding:28px 26px; margin-bottom:26px; border:1px solid var(--border); }
+  .card h1{ font-size:1.35rem; margin:0 0 14px; }
+  .card h3{ font-size:1.02rem; margin:22px 0 6px; }
+  .card p{ line-height:2; color:var(--text-soft); font-size:.98rem; }
+  .eyebrow{ color:var(--rose-deep); font-weight:700; font-size:.8rem; letter-spacing:.03em; }
+  .horse-block{ display:flex; gap:18px; align-items:center; margin:18px 0; flex-wrap:wrap; }
+  .intro-list{ margin:10px 0 0; padding-right:20px; color:var(--text-soft); line-height:2; }
+
+  .gestalt-box{ position:relative; }
+  #gestaltText{ width:100%; border:1px solid var(--border); border-radius:12px; background:var(--surface-tint); color:var(--text); font-family:'Noto Naskh Arabic','Vazirmatn',serif; font-size:.98rem; line-height:1.9; padding:14px; resize:none; transition:max-height .25s ease; }
+  #gestaltText.collapsed{ max-height:52px; overflow:hidden; }
+  #gestaltText.expanded{ max-height:400px; overflow:auto; }
+  .gestalt-row{ display:flex; justify-content:space-between; align-items:center; margin-top:10px; }
+  .gestalt-hint{ font-size:.78rem; color:var(--text-soft); }
+
+  .section-title{ font-weight:800; font-size:1.15rem; margin:0 0 14px; display:flex; align-items:center; gap:8px;}
+  .section-title .dot{ width:8px; height:8px; border-radius:50%; background:var(--rose); }
+  .goal-grid{ direction:rtl; display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:14px; }
+  @media (max-width:640px){ .goal-grid{ grid-template-columns:1fr; } }
+  .goal-card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); min-height:220px; display:flex; flex-direction:column; position:relative; }
+  .goal-head{ display:flex; align-items:center; gap:6px; }
+  .goal-title-input{ flex:1; border:none; background:transparent; font-weight:700; font-size:1.02rem; border-bottom:2px dashed var(--border); padding:6px 2px 10px; color:var(--text); font-family:inherit; }
+  .goal-title-input:focus{ outline:none; border-color:var(--rose); }
+  .goal-title-input::placeholder{ color:var(--text-soft); font-weight:500; }
+  .icon-btn{ border:none; background:transparent; cursor:pointer; font-size:.95rem; color:var(--text-soft); padding:6px; border-radius:8px; flex-shrink:0; }
+  .icon-btn:hover{ background:var(--rose-pale); color:var(--danger); }
+  .subgoal-list{ list-style:none; margin:12px 0; padding:0; display:flex; flex-direction:column; gap:8px; flex:1; }
+  .subgoal-item{ display:flex; align-items:center; gap:8px; font-size:.92rem; }
+  .check{ width:20px; height:20px; border-radius:50%; border:2px solid var(--rose); flex-shrink:0; cursor:pointer; display:flex; align-items:center; justify-content:center; background:transparent; }
+  .check.done{ background:var(--sage); border-color:var(--sage); }
+  .check.done::after{ content:'✓'; color:#fff; font-size:12px; }
+  .subgoal-text{ flex:1; cursor:text; border-bottom:1px dashed transparent; }
+  .subgoal-text:hover{ border-bottom-color:var(--border); }
+  .subgoal-text.done-text{ text-decoration:line-through; color:var(--text-soft); }
+  .subgoal-edit-input{ flex:1; border:1px solid var(--rose); border-radius:6px; padding:3px 6px; font-family:inherit; font-size:.9rem; background:var(--surface-tint); color:var(--text); }
+  .add-sub-row{ display:flex; gap:8px; margin-top:auto; }
+  .add-sub-row input{ flex:1; border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-family:inherit; background:var(--surface-tint); color:var(--text); font-size:.88rem; }
+  .btn-mini{ border:none; background:var(--rose); color:#fff; border-radius:10px; padding:8px 14px; cursor:pointer; font-family:inherit; font-weight:600; font-size:.85rem; }
+  .btn-mini:hover{ background:var(--rose-deep); }
+  .add-goal-row{ display:flex; justify-content:center; margin-bottom:30px; }
+  .add-goal-btn{ width:42px; height:42px; border-radius:50%; border:2px dashed var(--rose); background:var(--surface-tint); color:var(--rose-deep); font-size:1.3rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .add-goal-btn:hover{ background:var(--rose-pale); }
+
+  .cal-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .cal-nav{ display:flex; gap:8px; align-items:center; }
+  .cal-nav button{ border:1px solid var(--border); background:var(--surface); border-radius:8px; width:28px; height:28px; cursor:pointer; color:var(--text); }
+  .calendar-wrap{ overflow-x:auto; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px; box-shadow:var(--shadow); max-width:340px; margin:0 auto; }
+  .calendar{ display:grid; grid-template-columns:repeat(7, minmax(34px,1fr)); gap:3px; min-width:280px; }
+  .cal-dayname{ text-align:center; font-size:.6rem; color:var(--text-soft); font-weight:700; padding-bottom:2px; }
+  .cal-cell{ aspect-ratio:1/1; border:1px solid var(--border); border-radius:6px; padding:2px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; font-size:.62rem; background:var(--surface-tint); position:relative; }
+  .cal-cell.empty{ visibility:hidden; }
+  .cal-cell.marked{ background:var(--sage-pale); border-color:var(--sage); }
+  .cal-cell .num{ font-weight:700; }
+  .cal-cell .checkmark{ position:absolute; bottom:1px; left:1px; width:11px; height:11px; border-radius:50%; background:var(--sage-deep); color:#fff; font-size:8px; font-weight:900; display:flex; align-items:center; justify-content:center; }
+
+  .auth-card{ max-width:380px; margin:0 auto; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:26px; }
+  .tab-row{ display:flex; gap:8px; margin-bottom:18px; }
+  .tab-btn{ flex:1; padding:10px; border-radius:10px; border:1px solid var(--border); background:var(--surface-tint); cursor:pointer; font-family:inherit; font-weight:700; color:var(--text-soft); }
+  .tab-btn.active{ background:var(--rose); color:#fff; border-color:var(--rose); }
+  .field{ display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+  .field label{ font-size:.85rem; color:var(--text-soft); font-weight:600; }
+  .field input{ padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--surface-tint); color:var(--text); font-family:inherit; }
+  .field input:focus{ outline:none; border-color:var(--rose); }
+  .checkbox-row{ display:flex; align-items:center; gap:8px; margin-bottom:14px; font-size:.85rem; color:var(--text-soft); }
+  .btn-full{ width:100%; padding:12px; border:none; border-radius:12px; background:var(--rose); color:#fff; font-weight:700; cursor:pointer; font-family:inherit; }
+  .btn-full:hover{ background:var(--rose-deep); }
+  .auth-msg{ font-size:.85rem; margin-top:10px; text-align:center; color:var(--text-soft); }
+
+  .progress-card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:30px; display:flex; gap:28px; align-items:center; flex-wrap:wrap; }
+  .stat-box{ text-align:center; }
+  .stat-num{ font-size:1.6rem; font-weight:800; color:var(--rose-deep); }
+  .stat-label{ font-size:.82rem; color:var(--text-soft); }
+
+  .gate-msg{ text-align:center; padding:60px 20px; color:var(--text-soft); }
+  .toast{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--text); color:var(--bg); padding:10px 20px; border-radius:30px; font-size:.85rem; opacity:0; transition:opacity .3s ease; z-index:60; pointer-events:none; }
+  .toast.show{ opacity:1; }
+  .about-me-row{ display:flex; gap:10px; margin:6px 0; font-size:.92rem; color:var(--text-soft); }
+  .about-me-row b{ color:var(--text); min-width:90px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-right">
+    <div class="hamburger" id="hamburgerBtn"><span></span></div>
+    <div class="brand">🌱 میکروهدف</div>
+  </div>
+  <div class="topbar-actions">
+    <button class="pill-btn" data-view="about-me">👤 درباره من</button>
+    <button class="pill-btn" data-view="about-app">▢ درباره اپ</button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<nav class="sidebar" id="sidebar">
+  <div class="side-user" id="sideUserLabel"></div>
+  <div class="side-item" data-view="home">🏠 خانه</div>
+  <div class="side-divider"></div>
+  <div class="side-item" id="accountToggle">👤 اکانت</div>
+  <div class="side-sub" id="accountSub">
+    <div class="side-item" data-view="auth" data-tab="register">ثبت‌نام</div>
+    <div class="side-item" data-view="auth" data-tab="login">ورود</div>
+    <div class="side-item" data-view="auth" data-tab="forgot">فراموشی رمز عبور</div>
+    <div class="side-item" id="logoutBtn" style="display:none;">خروج از حساب</div>
+  </div>
+  <div class="side-divider"></div>
+  <div class="side-item" data-view="progress">📈 نمودار پیشرفت</div>
+  <div class="side-divider"></div>
+  <div class="side-item" id="themeToggle">🌓 حالت شب / روز</div>
+</nav>
+
+<main>
+
+  <section class="view active" id="view-home">
+    <div id="authGate" class="gate-msg">برای شروع، ابتدا از منوی «اکانت» ثبت‌نام یا وارد شوید.</div>
+
+    <div id="homeContent" style="display:none;">
+      <div class="card gestalt-box">
+        <div class="eyebrow">فضای شخصی شما</div>
+        <h1>گشتالت من</h1>
+        <p class="gestalt-hint" style="margin:0 0 10px;">یک توضیح اجمالی از تصویر کلی اهداف و کارهایی که قرار است انجام دهید اینجا بنویسید.</p>
+        <textarea id="gestaltText" class="collapsed" placeholder="مثلاً: امسال می‌خواهم در چند مسیر اصلی زندگی‌ام پیشرفت کنم..."></textarea>
+        <div class="gestalt-row">
+          <button class="btn-mini" id="gestaltToggleBtn">دیدن بیشتر</button>
+          <span class="gestalt-hint" id="gestaltSaveHint"></span>
+        </div>
+      </div>
+
+      <div class="section-title"><span class="dot"></span> اهداف اصلی شما</div>
+      <div class="goal-grid" id="goalGrid"></div>
+      <div class="add-goal-row"><button class="add-goal-btn" id="addGoalBtn" title="افزودن هدف جدید">+</button></div>
+
+      <div class="cal-header">
+        <div class="section-title" style="margin:0;"><span class="dot"></span> تقویم و یادداشت روزانه</div>
+        <div class="cal-nav"><button id="calPrev">‹</button><span id="calLabel" style="font-weight:700; font-size:.8rem;"></span><button id="calNext">›</button></div>
+      </div>
+      <div class="calendar-wrap"><div class="calendar" id="calendar"></div></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-auth">
+    <div class="auth-card">
+      <div class="tab-row">
+        <button class="tab-btn" data-authtab="register">ثبت‌نام</button>
+        <button class="tab-btn" data-authtab="login">ورود</button>
+        <button class="tab-btn" data-authtab="forgot">فراموشی رمز</button>
+      </div>
+      <div id="tab-register">
+        <div class="field"><label>ایمیل</label><input type="email" id="regEmail"></div>
+        <div class="field"><label>رمز عبور</label><input type="password" id="regPass"></div>
+        <button class="btn-full" id="btnRegister">ساخت حساب</button>
+      </div>
+      <div id="tab-login" style="display:none;">
+        <div class="field"><label>ایمیل</label><input type="email" id="loginEmail"></div>
+        <div class="field"><label>رمز عبور</label><input type="password" id="loginPass"></div>
+        <div class="checkbox-row"><input type="checkbox" id="rememberMe" checked><label for="rememberMe">مرا به خاطر بسپار</label></div>
+        <button class="btn-full" id="btnLogin">ورود</button>
+      </div>
+      <div id="tab-forgot" style="display:none;"><p class="auth-msg" style="margin-top:0;">این قابلیت هنوز آماده نشده و به‌زودی اضافه می‌شود.</p></div>
+      <div class="auth-msg" id="authMsg"></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-progress">
+    <div class="section-title"><span class="dot"></span> نمودار پیشرفت</div>
+    <div class="progress-card">
+      <svg width="140" height="140" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r="60" fill="none" stroke="var(--border)" stroke-width="14"/>
+        <circle id="progressRing" cx="70" cy="70" r="60" fill="none" stroke="var(--rose)" stroke-width="14" stroke-linecap="round" stroke-dasharray="377" stroke-dashoffset="377" transform="rotate(-90 70 70)"/>
+        <text id="progressPercentText" x="70" y="78" text-anchor="middle" font-size="24" font-weight="800" fill="var(--text)">۰٪</text>
+      </svg>
+      <div class="stat-box"><div class="stat-num" id="statTotal">0</div><div class="stat-label">کل ریزهدف‌ها</div></div>
+      <div class="stat-box"><div class="stat-num" id="statDone">0</div><div class="stat-label">تکمیل‌شده</div></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-about-app">
+    <div class="card">
+      <div class="eyebrow">توضیحات و مقدمه</div>
+      <h1 class="naskh">به میکروهدف خوش آمدید</h1>
+      <p class="naskh">این ابزار برای کسانی ساخته شده که می‌خوان با یک <b>دید گشتالتی</b> به اهدافشون نگاه کنن؛ یعنی قبل از هر چیز، یک تصویر کلی و اجمالی از خواسته‌هاشون بسازن، و بعد رفته‌رفته این تصویر را با جزئیات کامل کنن.</p>
+      <h3>مثال نقاشی اسب</h3>
+      <div class="horse-block">
+        <svg width="120" height="90" viewBox="0 0 120 90" fill="none"><path d="M14 70 Q20 40 45 34 Q52 20 70 22 Q78 16 90 20 L88 30 Q100 34 104 46 L96 50 Q98 60 90 66 L90 78 L82 78 L80 66 L50 66 L48 78 L40 78 L40 64 Q26 60 20 70 Z" stroke="#D98C93" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        <p class="naskh" style="margin:0; flex:1; min-width:220px;">فرض کنید می‌خواهید یک اسب نقاشی کنید. ابتدا طرح کلی را می‌کشید، سپس جزئیات را اضافه می‌کنید. اگر خسته شوید، باز هم یک اسب کامل دارید — نه یک جزئیات ناتمام و بی‌معنا.</p>
+      </div>
+      <h3>چرا اینجا ثبت ساعت مطالعه وجود ندارد؟</h3>
+      <p class="naskh">چون تمرکز روی زمان، شما را از خودِ هدف دور می‌کند.</p>
+      <h3>در این سایت چه می‌کنید؟</h3>
+      <ul class="intro-list naskh">
+        <li>«گشتالت من» — تصویر کلی اهدافتان را می‌نویسید</li>
+        <li>هدف‌های اصلی‌تان را تعریف می‌کنید (هر تعداد که بخواهید)</li>
+        <li>برای هرکدام، ریزهدف می‌نویسید و تیک می‌زنید</li>
+        <li>در تقویم روزانه یادداشت می‌گذارید</li>
+        <li>پیشرفت واقعی‌تان را می‌بینید</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="view" id="view-about-me">
+    <div class="card">
+      <div class="eyebrow">درباره سازنده</div>
+      <h1>ارکان محمودی</h1>
+      <p class="naskh">شغل اصلی من مشاور مدرسه است. علاقه‌مندم به دانش‌آموزان و هرکسی که می‌خواهد با یک مسیر روشن به اهدافش برسد کمک کنم. رویکرد اصلی من در طراحی این ابزار، رویکرد گشتالتی است.</p>
+      <div class="about-me-row"><b>شغل:</b><span>مشاور مدرسه</span></div>
+      <div class="about-me-row"><b>شماره تماس:</b><span><!-- ARKAN: اینجا -->به‌زودی تکمیل می‌شود</span></div>
+      <div class="about-me-row"><b>تلگرام:</b><span><!-- ARKAN: اینجا -->به‌زودی تکمیل می‌شود</span></div>
+    </div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API='https://microgoal-backend.vercel.app';
+let currentUserId=null, currentUserEmail='';
+let goalPositions=[1,2,3,4];
+let goalIds={};
+let calDate=new Date();
+let notesCache={};
+
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+function toFarsiDigits(n){ const f=['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹']; return String(n).replace(/[0-9]/g,d=>f[d]); }
+
+const sidebar=document.getElementById('sidebar'), overlay=document.getElementById('overlay');
+document.getElementById('hamburgerBtn').onclick=()=>{ sidebar.classList.add('open'); overlay.classList.add('show'); };
+overlay.onclick=()=>{ sidebar.classList.remove('open'); overlay.classList.remove('show'); };
+document.getElementById('accountToggle').onclick=()=>document.getElementById('accountSub').classList.toggle('open');
+document.querySelectorAll('[data-view]').forEach(el=>{
+  el.onclick=()=>{ showView(el.dataset.view); if(el.dataset.tab) setAuthTab(el.dataset.tab); sidebar.classList.remove('open'); overlay.classList.remove('show'); };
+});
+function showView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  if(name==='progress') loadProgress();
+}
+
+document.getElementById('themeToggle').onclick=()=>{
+  const html=document.documentElement;
+  html.dataset.theme = html.dataset.theme==='dark' ? '' : 'dark';
+};
+
+function setAuthTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.authtab===tab));
+  ['register','login','forgot'].forEach(t=> document.getElementById('tab-'+t).style.display=(t===tab)?'block':'none');
+}
+document.querySelectorAll('.tab-btn').forEach(b=> b.onclick=()=>setAuthTab(b.dataset.authtab));
+setAuthTab('register');
+
+function onLoggedIn(userId, email, remember){
+  currentUserId=userId; currentUserEmail=email;
+  if(remember) localStorage.setItem('microgoal_user', JSON.stringify({id:userId,email}));
+  document.getElementById('sideUserLabel').textContent='وارد شده با: '+email;
+  document.getElementById('logoutBtn').style.display='flex';
+  document.getElementById('authGate').style.display='none';
+  document.getElementById('homeContent').style.display='block';
+  showView('home');
+  loadGestalt(); loadGoals(); renderCalendar();
+}
+
+document.getElementById('btnRegister').onclick=async()=>{
+  const email=document.getElementById('regEmail').value.trim();
+  const password=document.getElementById('regPass').value;
+  if(!email||!password){ toast('ایمیل و رمز عبور را وارد کنید'); return; }
+  try{
+    const r=await fetch(API+'/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+    const d=await r.json();
+    if(r.ok){ toast('ثبت‌نام موفق بود، حالا وارد شوید'); setAuthTab('login'); }
+    else document.getElementById('authMsg').textContent=d.error||'خطا در ثبت‌نام';
+  }catch(e){ document.getElementById('authMsg').textContent='سرور در دسترس نیست'; }
+};
+
+document.getElementById('btnLogin').onclick=async()=>{
+  const email=document.getElementById('loginEmail').value.trim();
+  const password=document.getElementById('loginPass').value;
+  const remember=document.getElementById('rememberMe').checked;
+  if(!email||!password){ toast('ایمیل و رمز عبور را وارد کنید'); return; }
+  try{
+    const r=await fetch(API+'/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+    const d=await r.json();
+    if(r.ok){ toast('خوش آمدید!'); onLoggedIn(d.userId,email,remember); }
+    else document.getElementById('authMsg').textContent=d.error||'ورود ناموفق';
+  }catch(e){ document.getElementById('authMsg').textContent='سرور در دسترس نیست'; }
+};
+
+document.getElementById('logoutBtn').onclick=()=>{
+  localStorage.removeItem('microgoal_user');
+  currentUserId=null; currentUserEmail='';
+  document.getElementById('sideUserLabel').textContent='';
+  document.getElementById('logoutBtn').style.display='none';
+  document.getElementById('homeContent').style.display='none';
+  document.getElementById('authGate').style.display='block';
+  toast('از حساب خارج شدید');
+  showView('home');
+};
+
+(function tryAutoLogin(){
+  const saved=localStorage.getItem('microgoal_user');
+  if(saved){ try{ const u=JSON.parse(saved); onLoggedIn(u.id,u.email,true); }catch(e){} }
+})();
+
+const gestaltText=document.getElementById('gestaltText');
+document.getElementById('gestaltToggleBtn').onclick=()=>{
+  const collapsed=gestaltText.classList.contains('collapsed');
+  gestaltText.classList.toggle('collapsed',!collapsed);
+  gestaltText.classList.toggle('expanded',collapsed);
+  document.getElementById('gestaltToggleBtn').textContent=collapsed?'دیدن کمتر':'دیدن بیشتر';
+};
+let gestaltSaveTimer=null;
+gestaltText.addEventListener('input',()=>{
+  document.getElementById('gestaltSaveHint').textContent='در حال ذخیره…';
+  clearTimeout(gestaltSaveTimer);
+  gestaltSaveTimer=setTimeout(saveGestalt, 900);
+});
+async function saveGestalt(){
+  if(!currentUserId) return;
+  await fetch(API+'/users/'+currentUserId+'/gestalt',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({gestalt_text:gestaltText.value})});
+  document.getElementById('gestaltSaveHint').textContent='ذخیره شد ✓';
+  setTimeout(()=>document.getElementById('gestaltSaveHint').textContent='',1500);
+}
+async function loadGestalt(){
+  const r=await fetch(API+'/users/'+currentUserId+'/gestalt');
+  const d=await r.json();
+  gestaltText.value=d.gestalt_text||'';
+}
+
+const goalGrid=document.getElementById('goalGrid');
+function goalLabel(pos){
+  const names={1:'اول',2:'دوم',3:'سوم',4:'چهارم'};
+  return names[pos] ? 'هدف '+names[pos] : 'هدف شماره '+toFarsiDigits(pos);
+}
+function buildGoalCard(position){
+  const card=document.createElement('div'); card.className='goal-card'; card.dataset.pos=position;
+  card.innerHTML=`
+    <div class="goal-head">
+      <input class="goal-title-input" placeholder="عنوان ${goalLabel(position)} را بنویسید…" data-pos="${position}">
+      <button class="icon-btn goal-delete-btn" data-pos="${position}" title="حذف این هدف">🗑</button>
+    </div>
+    <ul class="subgoal-list" data-pos="${position}"></ul>
+    <div class="add-sub-row">
+      <input type="text" placeholder="ریزهدف جدید…" data-pos="${position}">
+      <button class="btn-mini" data-pos="${position}">افزودن</button>
+    </div>`;
+  return card;
+}
+function renderAllGoalSlots(){ goalGrid.innerHTML=''; goalPositions.forEach(pos=> goalGrid.appendChild(buildGoalCard(pos))); }
+renderAllGoalSlots();
+
+document.getElementById('addGoalBtn').onclick=()=>{
+  const next=Math.max(0,...goalPositions)+1;
+  goalPositions.push(next);
+  goalGrid.appendChild(buildGoalCard(next));
+};
+
+goalGrid.addEventListener('blur', async(e)=>{
+  if(!e.target.classList.contains('goal-title-input')) return;
+  const pos=e.target.dataset.pos, title=e.target.value.trim();
+  if(!title||!currentUserId) return;
+  if(goalIds[pos]){
+    await fetch(API+'/goals/'+goalIds[pos],{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({title})});
+    toast('عنوان ویرایش شد');
+  } else {
+    const r=await fetch(API+'/goals',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUserId,title,position:Number(pos)})});
+    const d=await r.json();
+    if(r.ok){ goalIds[pos]=d.goalId; toast('هدف ذخیره شد'); }
+  }
+}, true);
+
+goalGrid.addEventListener('click', async(e)=>{
+  if(e.target.classList.contains('btn-mini')){
+    const pos=e.target.dataset.pos;
+    const input=goalGrid.querySelector(`.add-sub-row input[data-pos="${pos}"]`);
+    const text=input.value.trim();
+    if(!text) return;
+    if(!goalIds[pos]){ toast('اول عنوان هدف را بنویسید'); return; }
+    const r=await fetch(API+'/subgoals',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({main_goal_id:goalIds[pos],text})});
+    if(r.ok){ input.value=''; loadSubgoals(pos); }
+  }
+  if(e.target.classList.contains('check')){
+    const id=e.target.dataset.id;
+    const done=e.target.classList.contains('done')?0:1;
+    await fetch(API+'/subgoals/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({is_done:done})});
+    e.target.classList.toggle('done');
+    e.target.nextElementSibling.classList.toggle('done-text');
+  }
+  if(e.target.classList.contains('goal-delete-btn')){
+    const pos=e.target.dataset.pos;
+    if(!goalIds[pos]){
+      const card=goalGrid.querySelector(`.goal-card[data-pos="${pos}"]`);
+      card.remove(); goalPositions=goalPositions.filter(p=>p!=pos);
+      return;
+    }
+    if(!confirm('این هدف و همه ریزهدف‌هایش حذف شود؟')) return;
+    await fetch(API+'/goals/'+goalIds[pos],{method:'DELETE'});
+    const card=goalGrid.querySelector(`.goal-card[data-pos="${pos}"]`);
+    card.remove();
+    goalPositions=goalPositions.filter(p=>p!=pos);
+    delete goalIds[pos];
+    toast('هدف حذف شد');
+  }
+  if(e.target.classList.contains('subgoal-delete-btn')){
+    const id=e.target.dataset.id;
+    await fetch(API+'/subgoals/'+id,{method:'DELETE'});
+    e.target.closest('.subgoal-item').remove();
+  }
+});
+
+goalGrid.addEventListener('dblclick', (e)=>{
+  if(!e.target.classList.contains('subgoal-text')) return;
+  const span=e.target;
+  const id=span.dataset.id;
+  const input=document.createElement('input');
+  input.type='text'; input.className='subgoal-edit-input'; input.value=span.textContent;
+  span.replaceWith(input); input.focus();
+  input.addEventListener('blur', async()=>{
+    const newText=input.value.trim();
+    if(newText){
+      await fetch(API+'/subgoals/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:newText})});
+      span.textContent=newText;
+    }
+    input.replaceWith(span);
+  });
+  input.addEventListener('keydown',(ev)=>{ if(ev.key==='Enter') input.blur(); });
+});
+
+async function loadGoals(){
+  const r=await fetch(API+'/goals/'+currentUserId);
+  const goals=await r.json();
+  goals.forEach(g=>{
+    if(!goalPositions.includes(g.position)){
+      goalPositions.push(g.position);
+      goalGrid.appendChild(buildGoalCard(g.position));
+    }
+    goalIds[g.position]=g.id;
+    const input=goalGrid.querySelector(`.goal-title-input[data-pos="${g.position}"]`);
+    if(input) input.value=g.title;
+    loadSubgoals(g.position);
+  });
+}
+async function loadSubgoals(pos){
+  const gid=goalIds[pos]; if(!gid) return;
+  const r=await fetch(API+'/subgoals/'+gid);
+  const subs=await r.json();
+  const list=goalGrid.querySelector(`.subgoal-list[data-pos="${pos}"]`);
+  list.innerHTML='';
+  subs.forEach(s=>{
+    const li=document.createElement('li'); li.className='subgoal-item';
+    li.innerHTML=`<span class="check ${s.is_done?'done':''}" data-id="${s.id}"></span><span class="subgoal-text ${s.is_done?'done-text':''}" data-id="${s.id}">${s.text}</span><button class="icon-btn subgoal-delete-btn" data-id="${s.id}" title="حذف">✕</button>`;
+    list.appendChild(li);
+  });
+}
+
+const dayNames=['ی','د','س','چ','پ','ج','ش'];
+const monthNames=['ژانویه','فوریه','مارس','آوریل','مه','ژوئن','ژوئیه','اوت','سپتامبر','اکتبر','نوامبر','دسامبر'];
+function fmtDate(y,m,d){ return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+
+async function renderCalendar(){
+  const cal=document.getElementById('calendar'); cal.innerHTML='';
+  dayNames.forEach(n=>{ const el=document.createElement('div'); el.className='cal-dayname'; el.textContent=n; cal.appendChild(el); });
+  const y=calDate.getFullYear(), m=calDate.getMonth();
+  document.getElementById('calLabel').textContent=`${monthNames[m]} ${y}`;
+  const firstDay=new Date(y,m,1).getDay();
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  if(currentUserId){
+    const r=await fetch(API+'/notes/'+currentUserId);
+    const notes=await r.json();
+    notesCache={}; notes.forEach(n=> notesCache[n.date]=n);
+  }
+  for(let i=0;i<firstDay;i++){ const e=document.createElement('div'); e.className='cal-cell empty'; cal.appendChild(e); }
+  for(let d=1; d<=daysInMonth; d++){
+    const dateStr=fmtDate(y,m,d);
+    const note=notesCache[dateStr];
+    const cell=document.createElement('div');
+    cell.className='cal-cell'+(note&&note.is_marked?' marked':'');
+    cell.innerHTML=`<span class="num">${toFarsiDigits(d)}</span>`+(note&&note.is_marked?'<span class="checkmark">✓</span>':'');
+    cell.title=note&&note.note?note.note:'';
+    cell.onclick=()=>openNoteDialog(dateStr, note);
+    cal.appendChild(cell);
+  }
+}
+document.getElementById('calPrev').onclick=()=>{ calDate.setMonth(calDate.getMonth()-1); renderCalendar(); };
+document.getElementById('calNext').onclick=()=>{ calDate.setMonth(calDate.getMonth()+1); renderCalendar(); };
+
+function openNoteDialog(dateStr, existing){
+  if(!currentUserId){ toast('ابتدا وارد شوید'); return; }
+  const text=prompt('یادداشت برای '+dateStr+':', existing?existing.note||'':'');
+  if(text===null) return;
+  const marked=confirm('این روز را با تیک سبز علامت بزنم؟ (تایید = بله)');
+  fetch(API+'/notes',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({user_id:currentUserId,date:dateStr,note:text,is_marked:marked?1:0})})
+    .then(()=>{ toast('یادداشت ذخیره شد'); renderCalendar(); });
+}
+
+async function loadProgress(){
+  if(!currentUserId){ toast('ابتدا وارد شوید'); return; }
+  const r=await fetch(API+'/progress/'+currentUserId);
+  const d=await r.json();
+  document.getElementById('statTotal').textContent=toFarsiDigits(d.total_subgoals);
+  document.getElementById('statDone').textContent=toFarsiDigits(d.completed_subgoals);
+  document.getElementById('progressPercentText').textContent=toFarsiDigits(d.progress_percent)+'٪';
+  const ring=document.getElementById('progressRing');
+  const circumference=377;
+  ring.style.strokeDashoffset=circumference-(d.progress_percent/100)*circumference;
+}
+
+renderCalendar();
+</script>
+</body>
+</html>
