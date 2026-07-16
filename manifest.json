@@ -1,13 +1,13 @@
 {
   "name": "میکروهدف",
   "short_name": "میکروهدف",
-  "start_url": "/",
+  "start_url": "https://arkan30.github.io/microgoal/",
   "display": "standalone",
   "background_color": "#1a4a2e",
   "theme_color": "#1a4a2e",
   "icons": [
     {
-      "src": "logo.png",
+      "src": "https://arkan30.github.io/microgoal/logo.png",
       "sizes": "192x192",
       "type": "image/png"
     }
