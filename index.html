@@ -90,15 +90,6 @@
 
   .section-title{ font-weight:800; font-size:1.15rem; margin:0 0 14px; display:flex; align-items:center; gap:8px;}
   .section-title .dot{ width:8px; height:8px; border-radius:50%; background:var(--rose); }
-
-  /* ---- تمرکز امروز (focus bar) ---- */
-  .focus-bar{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:0 0 16px; padding:12px 14px; background:var(--surface-tint); border:1px solid var(--border); border-radius:14px; }
-  .focus-bar-label{ font-size:.83rem; font-weight:700; color:var(--text-soft); white-space:nowrap; }
-  .focus-chips{ display:flex; gap:8px; flex-wrap:wrap; }
-  .focus-chip{ border:1px solid var(--border); background:var(--surface); color:var(--text-soft); border-radius:20px; padding:6px 14px; font-size:.8rem; font-weight:600; cursor:pointer; font-family:inherit; transition:all .18s ease; }
-  .focus-chip:hover{ border-color:var(--rose); color:var(--rose-deep); }
-  .focus-chip.focus-chip-active{ background:var(--rose); border-color:var(--rose); color:#fff; }
-
   .goal-grid{ direction:rtl; display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:14px; }
   @media (max-width:640px){ .goal-grid{ grid-template-columns:1fr; } }
   .goal-card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); min-height:220px; display:flex; flex-direction:column; position:relative; }
@@ -108,23 +99,6 @@
   .goal-title-input::placeholder{ color:var(--text-soft); font-weight:500; }
   .icon-btn{ border:none; background:transparent; cursor:pointer; font-size:.95rem; color:var(--text-soft); padding:6px; border-radius:8px; flex-shrink:0; }
   .icon-btn:hover{ background:var(--rose-pale); color:var(--danger); }
-
-  /* ---- دکمه بزرگ‌نمایی هدف (idea 1) ---- */
-  .goal-expand-btn{ font-size:.85rem; transition:transform .2s ease, background .15s ease, color .15s ease; }
-  .goal-expand-btn:hover{ background:var(--rose-pale); color:var(--rose-deep); }
-  .goal-card.expanded .goal-expand-btn{ transform:rotate(180deg); color:var(--rose-deep); }
-
-  .goal-grid.has-expanded .goal-card{ transition:opacity .25s ease, transform .25s ease, filter .25s ease; }
-  .goal-grid.has-expanded .goal-card:not(.expanded){ opacity:.45; transform:scale(.97); filter:saturate(.6); }
-  .goal-card.expanded{ grid-column:1 / -1; border-color:var(--rose); box-shadow:0 12px 32px rgba(90,50,55,0.14); }
-
-  /* ---- نشان تمرکز امروز روی کارت هدف (idea 2) ---- */
-  .goal-card.goal-focus{ border-color:var(--rose-deep); box-shadow:0 0 0 3px var(--rose-pale), var(--shadow); }
-  .goal-card.goal-focus::before{
-    content:'🎯 تمرکز امروز'; position:absolute; top:-11px; right:14px; background:var(--rose);
-    color:#fff; font-size:.68rem; font-weight:700; padding:3px 10px; border-radius:20px; box-shadow:var(--shadow);
-  }
-
   .subgoal-list{ list-style:none; margin:12px 0; padding:0; display:flex; flex-direction:column; gap:8px; flex:1; }
   .subgoal-item{ display:flex; align-items:center; gap:8px; font-size:.92rem; }
   .check{ width:20px; height:20px; border-radius:50%; border:2px solid var(--rose); flex-shrink:0; cursor:pointer; display:flex; align-items:center; justify-content:center; background:transparent; }
@@ -134,13 +108,6 @@
   .subgoal-text:hover{ border-bottom-color:var(--border); }
   .subgoal-text.done-text{ text-decoration:line-through; color:var(--text-soft); }
   .subgoal-edit-input{ flex:1; border:1px solid var(--rose); border-radius:6px; padding:3px 6px; font-family:inherit; font-size:.9rem; background:var(--surface-tint); color:var(--text); }
-
-  /* ---- افشای تدریجی ریزهدف‌ها (idea 3) ---- */
-  .subgoal-toggle-row{ list-style:none; }
-  .subgoal-toggle-link{ background:none; border:none; padding:2px 0; font-family:inherit; font-size:.78rem; color:var(--rose-deep); font-weight:600; cursor:pointer; text-align:right; width:100%; }
-  .subgoal-toggle-link:hover{ text-decoration:underline; }
-  .subgoal-done-hint{ font-size:.76rem; color:var(--text-soft); }
-
   .add-sub-row{ display:flex; gap:8px; margin-top:auto; }
   .add-sub-row input{ flex:1; border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-family:inherit; background:var(--surface-tint); color:var(--text); font-size:.88rem; }
   .btn-mini{ border:none; background:var(--rose); color:#fff; border-radius:10px; padding:8px 14px; cursor:pointer; font-family:inherit; font-weight:600; font-size:.85rem; }
@@ -238,12 +205,6 @@
       </div>
 
       <div class="section-title"><span class="dot"></span> اهداف اصلی شما</div>
-
-      <div class="focus-bar">
-        <span class="focus-bar-label">🎯 تمرکز امروز:</span>
-        <div class="focus-chips" id="focusChips"></div>
-      </div>
-
       <div class="goal-grid" id="goalGrid"></div>
       <div class="add-goal-row"><button class="add-goal-btn" id="addGoalBtn" title="افزودن هدف جدید">+</button></div>
 
@@ -346,11 +307,6 @@ let goalPositions=[1,2,3,4];
 let goalIds={};
 let calDate=new Date();
 let notesCache={};
-
-// --- idea 3 state: cache of subgoals per goal position + per-goal show/hide state ---
-let subgoalsCache={};
-let subgoalListState={};
-const SUBGOAL_LIMIT=3;
 
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
 function toFarsiDigits(n){ const f=['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹']; return String(n).replace(/[0-9]/g,d=>f[d]); }
@@ -466,7 +422,6 @@ function buildGoalCard(position){
   const card=document.createElement('div'); card.className='goal-card'; card.dataset.pos=position;
   card.innerHTML=`
     <div class="goal-head">
-      <button class="icon-btn goal-expand-btn" data-pos="${position}" title="بزرگ‌نمایی این هدف">⌄</button>
       <input class="goal-title-input" placeholder="عنوان ${goalLabel(position)} را بنویسید…" data-pos="${position}">
       <button class="icon-btn goal-delete-btn" data-pos="${position}" title="حذف این هدف">🗑</button>
     </div>
@@ -484,13 +439,12 @@ document.getElementById('addGoalBtn').onclick=()=>{
   const next=Math.max(0,...goalPositions)+1;
   goalPositions.push(next);
   goalGrid.appendChild(buildGoalCard(next));
-  renderFocusBar();
 };
 
 goalGrid.addEventListener('blur', async(e)=>{
   if(!e.target.classList.contains('goal-title-input')) return;
   const pos=e.target.dataset.pos, title=e.target.value.trim();
-  if(!title||!currentUserId){ renderFocusBar(); return; }
+  if(!title||!currentUserId) return;
   if(goalIds[pos]){
     await fetch(API+'/goals/'+goalIds[pos],{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({title})});
     toast('عنوان ویرایش شد');
@@ -499,37 +453,9 @@ goalGrid.addEventListener('blur', async(e)=>{
     const d=await r.json();
     if(r.ok){ goalIds[pos]=d.goalId; toast('هدف ذخیره شد'); }
   }
-  renderFocusBar();
 }, true);
 
 goalGrid.addEventListener('click', async(e)=>{
-  // ---- idea 1: بزرگ‌نمایی هدف در همان صفحه (فقط یک هدف در آن واحد) ----
-  if(e.target.classList.contains('goal-expand-btn')){
-    const pos=e.target.dataset.pos;
-    const card=goalGrid.querySelector(`.goal-card[data-pos="${pos}"]`);
-    const wasExpanded=card.classList.contains('expanded');
-    goalGrid.querySelectorAll('.goal-card.expanded').forEach(c=>c.classList.remove('expanded'));
-    if(!wasExpanded) card.classList.add('expanded');
-    goalGrid.classList.toggle('has-expanded', !!goalGrid.querySelector('.goal-card.expanded'));
-    goalPositions.forEach(p=> renderSubgoalList(p));
-    return;
-  }
-  // ---- idea 3: توگل‌های افشای تدریجی ریزهدف‌ها ----
-  if(e.target.classList.contains('subgoal-toggle-more')){
-    const pos=e.target.dataset.pos;
-    if(!subgoalListState[pos]) subgoalListState[pos]={showAllPending:false, showDone:false};
-    subgoalListState[pos].showAllPending=true;
-    renderSubgoalList(pos);
-    return;
-  }
-  if(e.target.classList.contains('subgoal-toggle-done')){
-    const pos=e.target.dataset.pos;
-    if(!subgoalListState[pos]) subgoalListState[pos]={showAllPending:false, showDone:false};
-    subgoalListState[pos].showDone=!subgoalListState[pos].showDone;
-    renderSubgoalList(pos);
-    return;
-  }
-
   if(e.target.classList.contains('btn-mini')){
     const pos=e.target.dataset.pos;
     const input=goalGrid.querySelector(`.add-sub-row input[data-pos="${pos}"]`);
@@ -541,24 +467,16 @@ goalGrid.addEventListener('click', async(e)=>{
   }
   if(e.target.classList.contains('check')){
     const id=e.target.dataset.id;
-    const list=e.target.closest('.subgoal-list');
-    const pos=list?list.dataset.pos:null;
     const done=e.target.classList.contains('done')?0:1;
     await fetch(API+'/subgoals/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({is_done:done})});
-    if(pos!=null && subgoalsCache[pos]){
-      const item=subgoalsCache[pos].find(s=>String(s.id)===String(id));
-      if(item) item.is_done=done;
-      renderSubgoalList(pos);
-    }
+    e.target.classList.toggle('done');
+    e.target.nextElementSibling.classList.toggle('done-text');
   }
   if(e.target.classList.contains('goal-delete-btn')){
     const pos=e.target.dataset.pos;
     if(!goalIds[pos]){
       const card=goalGrid.querySelector(`.goal-card[data-pos="${pos}"]`);
       card.remove(); goalPositions=goalPositions.filter(p=>p!=pos);
-      delete subgoalsCache[pos]; delete subgoalListState[pos];
-      goalGrid.classList.toggle('has-expanded', !!goalGrid.querySelector('.goal-card.expanded'));
-      renderFocusBar();
       return;
     }
     if(!confirm('این هدف و همه ریزهدف‌هایش حذف شود؟')) return;
@@ -567,23 +485,12 @@ goalGrid.addEventListener('click', async(e)=>{
     card.remove();
     goalPositions=goalPositions.filter(p=>p!=pos);
     delete goalIds[pos];
-    delete subgoalsCache[pos]; delete subgoalListState[pos];
-    goalGrid.classList.toggle('has-expanded', !!goalGrid.querySelector('.goal-card.expanded'));
-    if(String(getFocusPos())===String(pos)) setFocusPos(null);
-    renderFocusBar();
     toast('هدف حذف شد');
   }
   if(e.target.classList.contains('subgoal-delete-btn')){
     const id=e.target.dataset.id;
-    const list=e.target.closest('.subgoal-list');
-    const pos=list?list.dataset.pos:null;
     await fetch(API+'/subgoals/'+id,{method:'DELETE'});
-    if(pos!=null && subgoalsCache[pos]){
-      subgoalsCache[pos]=subgoalsCache[pos].filter(s=>String(s.id)!==String(id));
-      renderSubgoalList(pos);
-    } else {
-      e.target.closest('.subgoal-item').remove();
-    }
+    e.target.closest('.subgoal-item').remove();
   }
 });
 
@@ -591,8 +498,6 @@ goalGrid.addEventListener('dblclick', (e)=>{
   if(!e.target.classList.contains('subgoal-text')) return;
   const span=e.target;
   const id=span.dataset.id;
-  const list=span.closest('.subgoal-list');
-  const pos=list?list.dataset.pos:null;
   const input=document.createElement('input');
   input.type='text'; input.className='subgoal-edit-input'; input.value=span.textContent;
   span.replaceWith(input); input.focus();
@@ -601,10 +506,6 @@ goalGrid.addEventListener('dblclick', (e)=>{
     if(newText){
       await fetch(API+'/subgoals/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:newText})});
       span.textContent=newText;
-      if(pos!=null && subgoalsCache[pos]){
-        const item=subgoalsCache[pos].find(s=>String(s.id)===String(id));
-        if(item) item.text=newText;
-      }
     }
     input.replaceWith(span);
   });
@@ -624,107 +525,19 @@ async function loadGoals(){
     if(input) input.value=g.title;
     loadSubgoals(g.position);
   });
-  renderFocusBar();
 }
-
-// ---- idea 3: بارگذاری ریزهدف‌ها در کش محلی + رندر با محدودیت نمایش ----
 async function loadSubgoals(pos){
   const gid=goalIds[pos]; if(!gid) return;
   const r=await fetch(API+'/subgoals/'+gid);
   const subs=await r.json();
-  subgoalsCache[pos]=subs;
-  if(!subgoalListState[pos]) subgoalListState[pos]={showAllPending:false, showDone:false};
-  renderSubgoalList(pos);
-}
-
-function subgoalItemHTML(s){
-  return `<li class="subgoal-item"><span class="check ${s.is_done?'done':''}" data-id="${s.id}"></span><span class="subgoal-text ${s.is_done?'done-text':''}" data-id="${s.id}">${s.text}</span><button class="icon-btn subgoal-delete-btn" data-id="${s.id}" title="حذف">✕</button></li>`;
-}
-
-function renderSubgoalList(pos){
   const list=goalGrid.querySelector(`.subgoal-list[data-pos="${pos}"]`);
-  if(!list) return;
-  const subs=subgoalsCache[pos]||[];
-  if(!subgoalListState[pos]) subgoalListState[pos]={showAllPending:false, showDone:false};
-  const state=subgoalListState[pos];
-  const card=goalGrid.querySelector(`.goal-card[data-pos="${pos}"]`);
-  const expanded=!!(card && card.classList.contains('expanded'));
-
-  const pending=subs.filter(s=>!s.is_done);
-  const done=subs.filter(s=>s.is_done);
-
-  const pendingLimit=expanded ? pending.length : SUBGOAL_LIMIT;
-  const showPending=state.showAllPending ? pending : pending.slice(0, pendingLimit);
-  const hiddenPendingCount=pending.length-showPending.length;
-
-  let html='';
-  showPending.forEach(s=>{ html+=subgoalItemHTML(s); });
-
-  if(hiddenPendingCount>0){
-    html+=`<li class="subgoal-toggle-row"><button class="subgoal-toggle-link subgoal-toggle-more" data-pos="${pos}">و ${toFarsiDigits(hiddenPendingCount)} ریزهدف دیگر…</button></li>`;
-  }
-
-  if(done.length>0){
-    if(expanded){
-      if(state.showDone){
-        done.forEach(s=>{ html+=subgoalItemHTML(s); });
-        html+=`<li class="subgoal-toggle-row"><button class="subgoal-toggle-link subgoal-toggle-done" data-pos="${pos}">پنهان‌کردن ریزهدف‌های تکمیل‌شده</button></li>`;
-      } else {
-        html+=`<li class="subgoal-toggle-row"><button class="subgoal-toggle-link subgoal-toggle-done" data-pos="${pos}">نمایش ${toFarsiDigits(done.length)} ریزهدف تکمیل‌شده</button></li>`;
-      }
-    } else {
-      html+=`<li class="subgoal-toggle-row"><span class="subgoal-done-hint">${toFarsiDigits(done.length)} ریزهدف تکمیل‌شده</span></li>`;
-    }
-  }
-
-  list.innerHTML=html;
-}
-
-// ---- idea 2: تمرکز امروز (فقط محلی روی همین مرورگر، هر روز خودکار ریست می‌شود) ----
-function todayKey(){
-  const d=new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-function getFocusPos(){
-  try{
-    const raw=localStorage.getItem('microgoal_focus');
-    if(!raw) return null;
-    const obj=JSON.parse(raw);
-    if(obj.date!==todayKey()) return null;
-    return obj.pos;
-  }catch(e){ return null; }
-}
-function setFocusPos(pos){
-  if(pos==null) localStorage.removeItem('microgoal_focus');
-  else localStorage.setItem('microgoal_focus', JSON.stringify({date:todayKey(), pos}));
-  applyFocusHighlight();
-  renderFocusBar();
-}
-function applyFocusHighlight(){
-  const focusPos=getFocusPos();
-  goalGrid.querySelectorAll('.goal-card').forEach(card=>{
-    card.classList.toggle('goal-focus', focusPos!=null && String(card.dataset.pos)===String(focusPos));
+  list.innerHTML='';
+  subs.forEach(s=>{
+    const li=document.createElement('li'); li.className='subgoal-item';
+    li.innerHTML=`<span class="check ${s.is_done?'done':''}" data-id="${s.id}"></span><span class="subgoal-text ${s.is_done?'done-text':''}" data-id="${s.id}">${s.text}</span><button class="icon-btn subgoal-delete-btn" data-id="${s.id}" title="حذف">✕</button>`;
+    list.appendChild(li);
   });
 }
-function renderFocusBar(){
-  const chipsWrap=document.getElementById('focusChips');
-  if(!chipsWrap) return;
-  const focusPos=getFocusPos();
-  chipsWrap.innerHTML='';
-  goalPositions.forEach(pos=>{
-    const input=goalGrid.querySelector(`.goal-title-input[data-pos="${pos}"]`);
-    const title=(input && input.value.trim()) ? input.value.trim() : goalLabel(pos);
-    const chip=document.createElement('button');
-    chip.type='button';
-    chip.className='focus-chip'+(String(focusPos)===String(pos)?' focus-chip-active':'');
-    chip.textContent=title.length>16 ? title.slice(0,16)+'…' : title;
-    chip.dataset.pos=pos;
-    chip.onclick=()=>{ setFocusPos(String(focusPos)===String(pos) ? null : pos); };
-    chipsWrap.appendChild(chip);
-  });
-  applyFocusHighlight();
-}
-renderFocusBar();
 
 const dayNames=['ی','د','س','چ','پ','ج','ش'];
 const monthNames=['ژانویه','فوریه','مارس','آوریل','مه','ژوئن','ژوئیه','اوت','سپتامبر','اکتبر','نوامبر','دسامبر'];
