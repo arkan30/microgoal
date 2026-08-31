@@ -81,6 +81,17 @@
   .horse-block{ display:flex; gap:18px; align-items:center; margin:18px 0; flex-wrap:wrap; }
   .intro-list{ margin:10px 0 0; padding-right:20px; color:var(--text-soft); line-height:2; }
 
+  /* --- overview summary strip: shows the "whole" before the "parts", per the gestalt philosophy --- */
+  .overview-card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:20px 24px; margin-bottom:22px; display:flex; align-items:center; gap:22px; flex-wrap:wrap; }
+  .overview-ring{ flex-shrink:0; }
+  .overview-info{ flex:1; min-width:180px; }
+  .overview-title{ font-weight:800; font-size:1.05rem; margin:0 0 4px; }
+  .overview-sub{ font-size:.85rem; color:var(--text-soft); margin:0; line-height:1.8; }
+  .overview-stats{ display:flex; gap:18px; }
+  .overview-stat{ text-align:center; }
+  .overview-stat-num{ font-size:1.25rem; font-weight:800; color:var(--rose-deep); }
+  .overview-stat-label{ font-size:.72rem; color:var(--text-soft); }
+
   .gestalt-box{ position:relative; }
   #gestaltText{ width:100%; border:1px solid var(--border); border-radius:12px; background:var(--surface-tint); color:var(--text); font-family:'Noto Naskh Arabic','Vazirmatn',serif; font-size:.98rem; line-height:1.9; padding:14px; resize:none; transition:max-height .25s ease; }
   #gestaltText.collapsed{ max-height:52px; overflow:hidden; }
@@ -88,7 +99,8 @@
   .gestalt-row{ display:flex; justify-content:space-between; align-items:center; margin-top:10px; }
   .gestalt-hint{ font-size:.78rem; color:var(--text-soft); }
 
-  .section-title{ font-weight:800; font-size:1.15rem; margin:0 0 14px; display:flex; align-items:center; gap:8px;}
+  .section-title{ font-weight:800; font-size:1.15rem; margin:34px 0 14px; display:flex; align-items:center; gap:8px;}
+  .section-title:first-of-type{ margin-top:0; }
   .section-title .dot{ width:8px; height:8px; border-radius:50%; background:var(--rose); }
   .goal-grid{ direction:rtl; display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:14px; }
   @media (max-width:640px){ .goal-grid{ grid-template-columns:1fr; } }
@@ -101,6 +113,7 @@
   .icon-btn:hover{ background:var(--rose-pale); color:var(--danger); }
   .subgoal-list{ list-style:none; margin:12px 0; padding:0; display:flex; flex-direction:column; gap:8px; flex:1; }
   .subgoal-item{ display:flex; align-items:center; gap:8px; font-size:.92rem; }
+  .subgoal-empty{ font-size:.82rem; color:var(--text-soft); border:1px dashed var(--border); border-radius:10px; padding:10px 12px; text-align:center; }
   .check{ width:20px; height:20px; border-radius:50%; border:2px solid var(--rose); flex-shrink:0; cursor:pointer; display:flex; align-items:center; justify-content:center; background:transparent; }
   .check.done{ background:var(--sage); border-color:var(--sage); }
   .check.done::after{ content:'✓'; color:#fff; font-size:12px; }
@@ -193,6 +206,23 @@
     <div id="authGate" class="gate-msg">برای شروع، ابتدا از منوی «اکانت» ثبت‌نام یا وارد شوید.</div>
 
     <div id="homeContent" style="display:none;">
+
+      <div class="overview-card" id="overviewCard">
+        <svg class="overview-ring" width="86" height="86" viewBox="0 0 86 86">
+          <circle cx="43" cy="43" r="36" fill="none" stroke="var(--border)" stroke-width="9"/>
+          <circle id="overviewRing" cx="43" cy="43" r="36" fill="none" stroke="var(--rose)" stroke-width="9" stroke-linecap="round" stroke-dasharray="226" stroke-dashoffset="226" transform="rotate(-90 43 43)"/>
+          <text id="overviewPercentText" x="43" y="49" text-anchor="middle" font-size="15" font-weight="800" fill="var(--text)">۰٪</text>
+        </svg>
+        <div class="overview-info">
+          <p class="overview-title">تصویر کلی شما</p>
+          <p class="overview-sub" id="overviewSub">هنوز ریزهدفی تعریف نکرده‌اید — از پایین شروع کنید.</p>
+        </div>
+        <div class="overview-stats">
+          <div class="overview-stat"><div class="overview-stat-num" id="overviewTotal">۰</div><div class="overview-stat-label">کل ریزهدف‌ها</div></div>
+          <div class="overview-stat"><div class="overview-stat-num" id="overviewDone">۰</div><div class="overview-stat-label">تکمیل‌شده</div></div>
+        </div>
+      </div>
+
       <div class="card gestalt-box">
         <div class="eyebrow">فضای شخصی شما</div>
         <h1>گشتالت من</h1>
@@ -289,10 +319,10 @@
     <div class="card">
       <div class="eyebrow">درباره سازنده</div>
       <h1>ارکان محمودی</h1>
-      <p class="naskh">شغل اصلی من مشاور مدرسه است. علاقه‌مندم به دانش‌آموزان و هرکسی که می‌خواهد با یک مسیر روشن به اهدافش برسد کمک کنم. رویکرد اصلی من در طراحی این ابزار، رویکرد گشتالتی است.</p>
-      <div class="about-me-row"><b>شغل:</b><span>مشاور مدرسه</span></div>
-      <div class="about-me-row"><b>شماره تماس:</b><span><!-- ARKAN: اینجا -->به‌زودی تکمیل می‌شود</span></div>
-      <div class="about-me-row"><b>تلگرام:</b><span><!-- ARKAN: اینجا -->به‌زودی تکمیل می‌شود</span></div>
+      <p class="naskh">پیشینه‌ام روان‌شناسی است و این روزها در مسیر شروع به‌کار به‌عنوان مشاور مدرسه هستم. به دانش‌آموزان و هرکسی که می‌خواهد با یک مسیر روشن‌تر به اهدافش برسد علاقه‌مندم، و همین علاقه باعث شد میکروهدف را با رویکرد گشتالتی طراحی کنم.</p>
+      <div class="about-me-row"><b>حوزه:</b><span>روان‌شناسی و مشاوره تحصیلی</span></div>
+      <div class="about-me-row"><b>ایمیل:</b><span>arkan.mah2020@gmail.com</span></div>
+      <div class="about-me-row"><b>تلگرام:</b><span><!-- ARKAN: اینجا آیدی تلگرام واقعی را جایگزین کن -->به‌زودی تکمیل می‌شود</span></div>
     </div>
   </section>
 
@@ -344,7 +374,7 @@ function onLoggedIn(userId, email, remember){
   document.getElementById('authGate').style.display='none';
   document.getElementById('homeContent').style.display='block';
   showView('home');
-  loadGestalt(); loadGoals(); renderCalendar();
+  loadGestalt(); loadGoals(); renderCalendar(); loadOverview();
 }
 
 document.getElementById('btnRegister').onclick=async()=>{
@@ -471,6 +501,7 @@ goalGrid.addEventListener('click', async(e)=>{
     await fetch(API+'/subgoals/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({is_done:done})});
     e.target.classList.toggle('done');
     e.target.nextElementSibling.classList.toggle('done-text');
+    loadOverview();
   }
   if(e.target.classList.contains('goal-delete-btn')){
     const pos=e.target.dataset.pos;
@@ -486,11 +517,13 @@ goalGrid.addEventListener('click', async(e)=>{
     goalPositions=goalPositions.filter(p=>p!=pos);
     delete goalIds[pos];
     toast('هدف حذف شد');
+    loadOverview();
   }
   if(e.target.classList.contains('subgoal-delete-btn')){
     const id=e.target.dataset.id;
     await fetch(API+'/subgoals/'+id,{method:'DELETE'});
     e.target.closest('.subgoal-item').remove();
+    loadOverview();
   }
 });
 
@@ -532,11 +565,18 @@ async function loadSubgoals(pos){
   const subs=await r.json();
   const list=goalGrid.querySelector(`.subgoal-list[data-pos="${pos}"]`);
   list.innerHTML='';
-  subs.forEach(s=>{
-    const li=document.createElement('li'); li.className='subgoal-item';
-    li.innerHTML=`<span class="check ${s.is_done?'done':''}" data-id="${s.id}"></span><span class="subgoal-text ${s.is_done?'done-text':''}" data-id="${s.id}">${s.text}</span><button class="icon-btn subgoal-delete-btn" data-id="${s.id}" title="حذف">✕</button>`;
-    list.appendChild(li);
-  });
+  if(subs.length===0){
+    const empty=document.createElement('li');
+    empty.className='subgoal-empty';
+    empty.textContent='هنوز ریزهدفی برای این هدف اضافه نکرده‌اید';
+    list.appendChild(empty);
+  } else {
+    subs.forEach(s=>{
+      const li=document.createElement('li'); li.className='subgoal-item';
+      li.innerHTML=`<span class="check ${s.is_done?'done':''}" data-id="${s.id}"></span><span class="subgoal-text ${s.is_done?'done-text':''}" data-id="${s.id}">${s.text}</span><button class="icon-btn subgoal-delete-btn" data-id="${s.id}" title="حذف">✕</button>`;
+      list.appendChild(li);
+    });
+  }
 }
 
 const dayNames=['ی','د','س','چ','پ','ج','ش'];
@@ -590,6 +630,29 @@ async function loadProgress(){
   const ring=document.getElementById('progressRing');
   const circumference=377;
   ring.style.strokeDashoffset=circumference-(d.progress_percent/100)*circumference;
+}
+
+/* --- small "whole picture" summary shown at the top of the home view --- */
+async function loadOverview(){
+  if(!currentUserId) return;
+  try{
+    const r=await fetch(API+'/progress/'+currentUserId);
+    const d=await r.json();
+    document.getElementById('overviewTotal').textContent=toFarsiDigits(d.total_subgoals);
+    document.getElementById('overviewDone').textContent=toFarsiDigits(d.completed_subgoals);
+    document.getElementById('overviewPercentText').textContent=toFarsiDigits(d.progress_percent)+'٪';
+    const ring=document.getElementById('overviewRing');
+    const circumference=226;
+    ring.style.strokeDashoffset=circumference-(d.progress_percent/100)*circumference;
+    const sub=document.getElementById('overviewSub');
+    if(d.total_subgoals===0){
+      sub.textContent='هنوز ریزهدفی تعریف نکرده‌اید — از پایین شروع کنید.';
+    } else if(d.progress_percent>=100){
+      sub.textContent='همه‌ی ریزهدف‌های فعلی‌تان تکمیل شده — وقت تعریف اهداف بعدی است.';
+    } else {
+      sub.textContent=`${toFarsiDigits(d.completed_subgoals)} از ${toFarsiDigits(d.total_subgoals)} ریزهدف را تا اینجا کامل کرده‌اید.`;
+    }
+  }catch(e){}
 }
 
 renderCalendar();
